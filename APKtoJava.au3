@@ -347,6 +347,11 @@ EndFunc   ;==>Restart
 
 
 
+;This version of Apk2Java is used without GUI only with command line parameters.
+;It works only with apks and creates eclipse projects.
+;param1 - apk to decompile
+;param2 - output path
+;The progress is stored in the output directory in the Progress.txt file.
 $gui = GUICreate("APK to Java Release Candidate 3  -  by broodplank", 550, 490)
 
 $filemenu = GUICtrlCreateMenu("&File")
@@ -395,90 +400,62 @@ GUICtrlCreateLabel("Additional options:", 15, 350)
 $decompile_eclipse = GUICtrlCreateCheckbox("Convert output to an Eclipse project", 15, 370)
 $decompile_zip = GUICtrlCreateCheckbox("Make zip archive of output files", 15, 390)
 
-$start_process = GUICtrlCreateButton("Start Decompilation Process!", 5, 420, 290, 25)
-
 $copyright = GUICtrlCreateLabel("©2014 broodplank.net - All Rights Reserved", 5, 453)
 GUICtrlSetStyle($copyright, $WS_DISABLED)
 
 GUISetState()
 
-While 1
+;Refer to the following about the use of command line parameters:
+;http://www.autoitscript.com/autoit3/docs/intro/running.htm#CommandLine
+$getpath_apkjar = $CmdLine[1]
+If $getpath_apkjar = "" Then
+	;
+Else
+	If StringInStr(_GetExtProperty($getpath_apkjar, 0), Chr(32), 0, 1) Then
+		Dim $msgboxfile
+		$msgboxfile = MsgBox(51, "APK To Java Error", "A space has been found in your apk name" & @CRLF & "This can lead to an invalid output and/or errors" & @CRLF & "The main reason is that DOS doesn't allow you to use spaces" & @CRLF & @CRLF & "Do you want to continue?" & @CRLF & @CRLF & "Press 'Yes' to auto remove the spaces from your apk file name and continue the operation" & @CRLF & "Press 'No' to keep the spaces in the apk name (you will regret it)" & @CRLF & "Press 'Cancel' to cancel operation and set apk field blank.")
+		If $msgboxfile = 7 Then
+			GUICtrlSetData($file, _GetExtProperty($getpath_apkjar, 0))
+		ElseIf $msgboxfile = 2 Then
+			GUICtrlSetData($file, "")
+		ElseIf $msgboxfile = 6 Then
 
-	$msg = GUIGetMsg()
+			$apknospace = StringStripWS(_GetExtProperty($getpath_apkjar, 0), 8)
 
-	Select
+			FileMove($getpath_apkjar, GetDir($getpath_apkjar) & $apknospace)
+			GUICtrlSetData($file, $apknospace, 0)
 
-		Case $msg = $gui_event_close Or $msg = $filemenu_exit
-			Exit
+			$getpath_apkjar = GetDir($getpath_apkjar) & $apknospace
 
-		Case $msg = $filebrowse
-			$getpath_apkjar = FileOpenDialog("APK to Java, please select an apk/jar file", "", "APK Files (*.apk)|JAR Files (*.jar)", 1, "")
-			If $getpath_apkjar = "" Then
-				;
-			Else
-				If StringInStr(_GetExtProperty($getpath_apkjar, 0), Chr(32), 0, 1) Then
-					Dim $msgboxfile
-					$msgboxfile = MsgBox(51, "APK To Java Error", "A space has been found in your apk name" & @CRLF & "This can lead to an invalid output and/or errors" & @CRLF & "The main reason is that DOS doesn't allow you to use spaces" & @CRLF & @CRLF & "Do you want to continue?" & @CRLF & @CRLF & "Press 'Yes' to auto remove the spaces from your apk file name and continue the operation" & @CRLF & "Press 'No' to keep the spaces in the apk name (you will regret it)" & @CRLF & "Press 'Cancel' to cancel operation and set apk field blank.")
-					If $msgboxfile = 7 Then
-						GUICtrlSetData($file, _GetExtProperty($getpath_apkjar, 0))
-					ElseIf $msgboxfile = 2 Then
-						GUICtrlSetData($file, "")
-					ElseIf $msgboxfile = 6 Then
+		EndIf
+	Else
+		GUICtrlSetData($file, _GetExtProperty($getpath_apkjar, 0))
+	EndIf
 
-						$apknospace = StringStripWS(_GetExtProperty($getpath_apkjar, 0), 8)
+	If GUICtrlRead($filedex) <> "" Then GUICtrlSetData($filedex, "")
+EndIf
 
-						FileMove($getpath_apkjar, GetDir($getpath_apkjar) & $apknospace)
-						GUICtrlSetData($file, $apknospace, 0)
+$getpath_outputdir = $CmdLine[2]
+If $getpath_outputdir = "" Then
+	GUICtrlSetData($destination, "")
+Else
+	GUICtrlSetData($destination, $getpath_outputdir)
+	If StringInStr($getpath_outputdir, Chr(32), 1) Then
+		Dim $msgbox
+		$msgbox = MsgBox(49, "APK To Java Warning", "A space has been found in your destination directory." & @CRLF & "This can lead to an invalid output." & @CRLF & "Do you want to continue?")
+		If $msgbox = 1 Then
+			GUICtrlSetData($destination, $getpath_outputdir)
+		ElseIf $msgbox = 2 Then
+			GUICtrlSetData($destination, "")
+		EndIf
+	EndIf
+EndIf
 
-						$getpath_apkjar = GetDir($getpath_apkjar) & $apknospace
-
-					EndIf
-				Else
-					GUICtrlSetData($file, _GetExtProperty($getpath_apkjar, 0))
-				EndIf
-
-				If GUICtrlRead($filedex) <> "" Then GUICtrlSetData($filedex, "")
-			EndIf
-
-		Case $msg = $filebrowsedex
-			$getpath_classes = FileOpenDialog("APK to Java, please select a classes.dex file", "", "DEX Files (*.dex)", 1, "classes.dex")
-			If $getpath_classes = "" Then
-				;
-			Else
-				GUICtrlSetData($filedex, _GetExtProperty($getpath_classes, 0))
-				If GUICtrlRead($file) <> "" Then GUICtrlSetData($file, "")
-			EndIf
-
-		Case $msg = $destdirbrowse
-			$getpath_outputdir = FileSelectFolder("APK to Java, please select the output directory", "", 7, "")
-			If $getpath_outputdir = "" Then
-				GUICtrlSetData($destination, "")
-			Else
-				GUICtrlSetData($destination, $getpath_outputdir)
-				If StringInStr($getpath_outputdir, Chr(32), 1) Then
-					Dim $msgbox
-					$msgbox = MsgBox(49, "APK To Java Warning", "A space has been found in your destination directory." & @CRLF & "This can lead to an invalid output." & @CRLF & "Do you want to continue?")
-					If $msgbox = 1 Then
-						GUICtrlSetData($destination, $getpath_outputdir)
-					ElseIf $msgbox = 2 Then
-						GUICtrlSetData($destination, "")
-					EndIf
-				EndIf
-			EndIf
-
-		Case $msg = $decompile_eclipse And BitAND(GUICtrlRead($decompile_eclipse), $GUI_CHECKED) = $GUI_CHECKED
-			GUICtrlSetState($decompile_resource, $GUI_CHECKED)
-			GUICtrlSetState($decompile_resource, $GUI_DISABLE)
-			GUICtrlSetState($decompile_source_java, $GUI_CHECKED)
-			GUICtrlSetState($decompile_source_java, $GUI_DISABLE)
-
-		Case $msg = $decompile_eclipse And BitAND(GUICtrlRead($decompile_eclipse), $GUI_UnChecked) = $GUI_UnChecked
-			GUICtrlSetState($decompile_resource, $GUI_UnChecked)
-			GUICtrlSetState($decompile_resource, $GUI_ENABLE)
-			GUICtrlSetState($decompile_source_java, $GUI_UnChecked)
-			GUICtrlSetState($decompile_source_java, $GUI_ENABLE)
-
-		Case $msg = $start_process
+GUICtrlSetState($decompile_eclipse, $GUI_CHECKED)
+GUICtrlSetState($decompile_resource, $GUI_CHECKED)
+GUICtrlSetState($decompile_resource, $GUI_DISABLE)
+GUICtrlSetState($decompile_source_java, $GUI_CHECKED)
+GUICtrlSetState($decompile_source_java, $GUI_DISABLE)
 
 			If GUICtrlRead($file) = "" Then
 				If GUICtrlRead($filedex) = "" Then
@@ -519,30 +496,7 @@ While 1
 
 			EndIf
 
-
-		Case $msg = $helpmenu_help
-			_RunDos("start " & @ScriptDir & "\help.chm")
-
-		Case $msg = $helpmenu_about
-			MsgBox(0, "APK to Java -- About", "About APK to Java" & @CRLF & @CRLF & "APK to Java" & @CRLF & "Version: RC3" & @CRLF & "Author: broodplank(1337)" & @CRLF & "Site: www.broodplank.net")
-
-		Case $msg = $helpmenu_donate
-			_RunDos("start http://forum.xda-developers.com/donatetome.php?u=4354408")
-
-		Case $msg = $optionsmenu_preferences
-			_PreferencesMenu()
-
-		Case $msg = $filemenu_restart
-			If ProcessExists("APKtoJava.exe") Then
-				OnAutoItExitRegister("Restart")
-				Exit
-			EndIf
-
-
-
-	EndSelect
-
-WEnd
+Exit
 
 
 ; #FUNCTION# ======================================================================================================

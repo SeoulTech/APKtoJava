@@ -45,43 +45,43 @@ Next
 FixConfig()
 
 ;Check for files
-If Not FileExists("tools") Then
+If Not FileExists(@ScriptDir & "\tools") Then
 	MsgBox(16, "APK to Java", "Missing tools folder, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\7za.exe") Then
+If Not FileExists(@ScriptDir & "\tools\7za.exe") Then
 	MsgBox(16, "APK to Java", "Missing 7za.exe, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\aapt.exe") Then
+If Not FileExists(@ScriptDir & "\tools\aapt.exe") Then
 	MsgBox(16, "APK to Java", "Missing aapt.exe, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\apktool.jar") Then
+If Not FileExists(@ScriptDir & "\tools\apktool.jar") Then
 	MsgBox(16, "APK to Java", "Missing apktool.jar, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\baksmali-2.0.3.jar") Then
+If Not FileExists(@ScriptDir & "\tools\baksmali-2.0.3.jar") Then
 	MsgBox(16, "APK to Java", "Missing baksmali-2.0.3.jar, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\jd-gui.exe") Then
+If Not FileExists(@ScriptDir & "\tools\jd-gui.exe") Then
 	MsgBox(16, "APK to Java", "Missing jd-gui.exe, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\lib") Then
+If Not FileExists(@ScriptDir & "\tools\lib") Then
 	MsgBox(16, "APK to Java", "Missing tools\lib folder, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\dex2jar.bat") Then
+If Not FileExists(@ScriptDir & "\tools\dex2jar.bat") Then
 	MsgBox(16, "APK to Java", "Missing dex2jar.bat, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\setclasspath.bat") Then
+If Not FileExists(@ScriptDir & "\tools\setclasspath.bat") Then
 	MsgBox(16, "APK to Java", "Missing setclasspath.bat, please reinstall the application and try again!")
 	Exit
 EndIf
-If Not FileExists("tools\jad.exe") Then
+If Not FileExists(@ScriptDir & "\tools\jad.exe") Then
 	MsgBox(16, "APK to Java", "Missing jad.exe, please reinstall the application and try again!")
 	Exit
 EndIf
@@ -290,7 +290,7 @@ Func _MakeEclipse()
 	If FileExists($getpath_outputdir & "\eclipseproject") Then DirRemove($getpath_outputdir & "\eclipseproject", 1)
 
 	_AddLog("- Extracting Example Project..")
-	RunWait(@ComSpec & " /c " & "7za.exe x -y eclipseproject.zip -o" & $getpath_outputdir & "\eclipseproject", @ScriptDir & "\tools", @SW_HIDE)
+	RunWait(@ComSpec & " /c " & "7za.exe x -y " & @ScriptDir & "\tools\eclipseproject.zip -o" & $getpath_outputdir & "\eclipseproject", @ScriptDir & "\tools", @SW_HIDE)
 
 	_AddLog("- Importing AndroidManifest.xml...")
 	FileCopy($getpath_outputdir & "\resource\AndroidManifest.xml", $getpath_outputdir & "\eclipseproject\AndroidManifest.xml", 1)

@@ -303,8 +303,10 @@ Func _MakeEclipse()
 	_AddLog("- Setting Project Name..")
 	;Local $namearray[1]
 	$searchname = _StringSearchInFile($getpath_outputdir & "\eclipseproject\AndroidManifest.xml", "package")
+	_AddLog("- search name " & $searchname)
 	$namearray = StringRegExp($searchname, "package=" & Chr(34) & "(.*?)" & Chr(34), 1, 1)
 
+	_AddLog("- Setting name " & $namearray & " in .project")
 	ConsoleWrite($namearray)
 
 	;If package name has been found, continue normal procedure
@@ -496,7 +498,17 @@ GUICtrlSetState($decompile_source_java, $GUI_DISABLE)
 
 			EndIf
 
-Exit
+While 1
+		$msg2 = GUIGetMsg()
+
+		Select
+
+			Case $msg2 = $gui_event_close 
+				Exit			
+		EndSelect
+WEnd
+				
+;Exit
 
 
 ; #FUNCTION# ======================================================================================================
